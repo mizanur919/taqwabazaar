@@ -1,22 +1,49 @@
+import Image from "next/image";
 import Link from "next/link";
-import { getCategories } from "@/lib/catalog";
+import { ChevronDown } from "lucide-react";
+import type { LayoutSettings, NavLink } from "@/lib/layout";
+import { site } from "@/lib/site";
 import { HeaderIcons } from "./header-icons";
+import { MenuBadgePill } from "./menu-badge";
 import { SearchBox } from "./search-box";
 
-export function Logo() {
+export function Logo({ src }: { src?: string }) {
   return (
     <Link href="/" className="shrink-0 text-xl font-bold tracking-tight text-ink">
-      Taqwa<span className="text-brand">Bazaar</span>
+      {src ? (
+        <Image src={src} alt={site.name} width={160} height={40} priority className="h-9 w-auto max-w-40 object-contain" />
+      ) : (
+        <>
+          Taqwa<span className="text-brand">Bazaar</span>
+        </>
+      )}
     </Link>
   );
 }
 
-export async function Header({ phone }: { phone: string }) {
-  const categories = await getCategories();
-  const navCategories = categories.filter((c) => c.productCount > 0).slice(0, 5);
+const announcementColors: Record<LayoutSettings["announcement"]["color"], string> = {
+  brand: "bg-brand text-white",
+  dark: "bg-ink text-white",
+  green: "bg-green-600 text-white",
+  red: "bg-red-600 text-white",
+};
 
+function Announcement({ a }: { a: LayoutSettings["announcement"] }) {
+  if (!a.enabled || !a.text) return null;
+  const cls = `block px-4 py-2 text-center text-sm font-semibold ${announcementColors[a.color] ?? announcementColors.brand}`;
+  return a.link ? (
+    <Link href={a.link} className={`${cls} hover:opacity-90`}>
+      {a.text}
+    </Link>
+  ) : (
+    <p className={cls}>{a.text}</p>
+  );
+}
+
+export function Header({ phone, nav, layout }: { phone: string; nav: NavLink[]; layout: LayoutSettings }) {
   return (
     <header className="sticky top-0 z-30 bg-white">
+      <Announcement a={layout.announcement} />
       <div className="bg-ink text-xs text-white">
         <div className="mx-auto flex max-w-7xl justify-end gap-3 px-4 py-1.5">
           <span>Cash On Delivery</span>
@@ -31,7 +58,7 @@ export async function Header({ phone }: { phone: string }) {
 
       <div className="border-b border-line">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
-          <Logo />
+          <Logo src={layout.logo} />
           <div className="mx-auto hidden w-full max-w-xl md:block">
             <SearchBox />
           </div>
@@ -43,23 +70,30 @@ export async function Header({ phone }: { phone: string }) {
       </div>
 
       <nav className="border-b border-line">
-        <ul className="no-scrollbar mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto px-4 py-2.5 text-sm font-semibold whitespace-nowrap md:justify-center">
-          <li>
-            <Link href="/" className="hover:text-brand">Home</Link>
-          </li>
-          <li>
-            <Link href="/category/all" className="hover:text-brand">All Products</Link>
-          </li>
-          {navCategories.map((c) => (
-            <li key={c.id}>
-              <Link href={`/category/${c.slug}`} className="hover:text-brand">
-                {c.name}
+        {/* scrolls sideways on phones; on desktop it wraps so dropdowns are not clipped */}
+        <ul className="no-scrollbar mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto px-4 py-2.5 text-sm font-semibold whitespace-nowrap md:flex-wrap md:justify-center md:overflow-visible">
+          {nav.map((l) => (
+            <li key={l.key} className="group relative">
+              <Link href={l.href} className="flex items-center gap-1 hover:text-brand">
+                {l.label}
+                <MenuBadgePill badge={l.badge} />
+                {l.children.length > 0 && <ChevronDown className="hidden size-3.5 md:block" />}
               </Link>
+              {l.children.length > 0 && (
+                <div className="invisible absolute left-1/2 top-full z-40 hidden -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 md:block">
+                  <ul className="min-w-48 rounded-xl border border-line bg-white py-2 text-sm font-medium shadow-xl">
+                    {l.children.map((c) => (
+                      <li key={c.href}>
+                        <Link href={c.href} className="block px-4 py-2 hover:bg-slate-50 hover:text-brand">
+                          {c.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </li>
           ))}
-          <li>
-            <Link href="/track-order" className="hover:text-brand">অর্ডার ট্র্যাকিং</Link>
-          </li>
         </ul>
       </nav>
     </header>

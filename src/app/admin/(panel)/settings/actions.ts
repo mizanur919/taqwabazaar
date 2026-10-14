@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { headers } from "next/headers";
 import { hashPassword, requireAdmin, verifyPassword, type AdminViewer } from "@/lib/auth";
 import { readFraudSettings, refreshRisk, saveFraudSettings } from "@/lib/fraud";
+import { cleanItems, PAYMENT_BADGES, readLayout, safeLink, saveLayout, type FooterColumn, type LayoutSettings, type MenuItem } from "@/lib/layout";
 import { getBalance, newWebhookToken, readSteadfastSettings, saveSteadfastSettings } from "@/lib/courier";
 import { PIXEL_ID, readMetaSettings, saveMetaSettings, sendServerEvents } from "@/lib/meta";
 import { normalizePhone, BD_PHONE } from "@/lib/orders";
@@ -425,4 +426,95 @@ export async function testFraudLookup(phone: string): Promise<Result> {
       ? `কাজ করছে। ${p}: মোট ${c.total}টি পার্সেল, সফল ${c.success}টি, বাতিল ${c.cancelled}টি${c.reports.length ? `, রিপোর্ট ${c.reports.length}টি` : ""}।`
       : "কাজ করছে, তবে এই নাম্বারের কোনো হিসাব পাওয়া যায়নি।",
   };
+}
+
+// ───────────── Menus and header/footer ─────────────
+
+export async function saveMenus(input: { headerMenu: MenuItem[]; footerColumns: FooterColumn[] }): Promise<Result> {
+  const who = await requireOwner();
+  if (denied(who)) return who;
+  const headerMenu = cleanItems(input?.headerMenu, 30);
+  if (headerMenu.length === 0) return { ok: false, error: "Header মেনুতে অন্তত একটি আইটেম রাখুন" };
+  const footerColumns = (Array.isArray(input?.footerColumns) ? input.footerColumns : []).slice(0, 4).map((c, n) => ({
+    id: text(c?.id, 40) || `c${n}`,
+    title: text(c?.title, 40),
+    items: cleanItems(c?.items, 15),
+  }));
+  await saveLayout({ headerMenu, footerColumns });
+  updateTag("settings");
+  return { ok: true, message: "মেনু সেভ হয়েছে। স্টোরে সাথে সাথে বদলে গেছে।" };
+}
+
+export async function uploadBrandImage(formData: FormData): Promise<{ url?: string; error?: string }> {
+  const who = await requireOwner();
+  if (denied(who)) return { error: who.ok ? "" : who.error };
+  const file = formData.get("file");
+  const kind = formData.get("kind") === "favicon" ? "favicon" : "logo";
+  if (!(file instanceof File)) return { error: "কোনো ফাইল পাওয়া যায়নি" };
+  try {
+    return { url: await saveImage(file, "branding", kind === "favicon" ? 128 : 600) };
+  } catch (e) {
+    if (e instanceof UploadError) return { error: e.message };
+    console.error("brand image upload failed", e);
+    return { error: "ছবি আপলোড করা যায়নি" };
+  }
+}
+
+export async function saveHeaderFooter(input: {
+  announcement: LayoutSettings["announcement"];
+  logo: string;
+  favicon: string;
+  footerAbout: string;
+  copyright: string;
+  license: string;
+  social: LayoutSettings["social"];
+  badges: string[];
+  mobileNav: boolean;
+}): Promise<Result> {
+  const who = await requireOwner();
+  if (denied(who)) return who;
+  const current = await readLayout();
+  const fieldErrors: Record<string, string> = {};
+
+  const a = input?.announcement ?? current.announcement;
+  const annText = text(a.text, 160);
+  const annLink = String(a.link ?? "").trim() ? safeLink(a.link) : "";
+  if (String(a.link ?? "").trim() && !annLink) fieldErrors.annLink = "লিংক / দিয়ে শুরু হবে (যেমন /category/phone) অথবা https:// দিয়ে";
+  if (a.enabled && !annText) fieldErrors.annText = "ঘোষণার লেখা দিন";
+
+  const social = { facebook: "", instagram: "", youtube: "", tiktok: "" } as LayoutSettings["social"];
+  for (const k of Object.keys(social) as (keyof typeof social)[]) {
+    const v = String(input?.social?.[k] ?? "").trim();
+    if (!v) continue;
+    if (!/^https:\/\/[^\s]+$/.test(v) || v.length > 300) fieldErrors[`social_${k}`] = "https:// দিয়ে পুরো লিংক দিন";
+    else social[k] = v;
+  }
+
+  // only images we uploaded ourselves (or the current ones) can be used as logo/favicon
+  const ownImage = (v: unknown, cur: string) => {
+    const s = String(v ?? "").trim();
+    return !s || s === cur || s.startsWith(`${uploadBaseUrl()}/branding/`) ? s : null;
+  };
+  const logo = ownImage(input?.logo, current.logo);
+  const favicon = ownImage(input?.favicon, current.favicon);
+  if (logo === null) fieldErrors.logo = "লোগো আবার আপলোড করুন";
+  if (favicon === null) fieldErrors.favicon = "আইকন আবার আপলোড করুন";
+  if (Object.keys(fieldErrors).length) return { ok: false, error: "কিছু তথ্য ঠিক করতে হবে", fieldErrors };
+
+  await saveLayout({
+    announcement: { enabled: !!a.enabled, text: annText, link: annLink, color: ["brand", "dark", "green", "red"].includes(a.color) ? a.color : "brand" },
+    logo: logo!,
+    favicon: favicon!,
+    footerAbout: text(input?.footerAbout, 500),
+    copyright: text(input?.copyright, 160),
+    license: text(input?.license, 160),
+    social,
+    badges: (Array.isArray(input?.badges) ? input.badges : []).filter((b) => b in PAYMENT_BADGES),
+    mobileNav: !!input?.mobileNav,
+  });
+  // replaced images are removed from disk
+  if (current.logo && current.logo !== logo) await deleteImage(current.logo);
+  if (current.favicon && current.favicon !== favicon) await deleteImage(current.favicon);
+  updateTag("settings");
+  return { ok: true, message: "সেভ হয়েছে। স্টোরে সাথে সাথে বদলে গেছে।" };
 }

@@ -9,6 +9,8 @@ import { AppearanceSettings } from "@/components/admin/settings/appearance";
 import { BannersManager } from "@/components/admin/settings/banners-manager";
 import { CourierForm } from "@/components/admin/settings/courier-form";
 import { FraudForm } from "@/components/admin/settings/fraud-form";
+import { HeaderFooterForm } from "@/components/admin/settings/header-footer-form";
+import { MenusForm } from "@/components/admin/settings/menus-form";
 import { MarketingForm } from "@/components/admin/settings/marketing-form";
 import { PagesEditor } from "@/components/admin/settings/pages-editor";
 import { StoreInfoForm } from "@/components/admin/settings/store-info-form";
@@ -16,6 +18,7 @@ import { TeamManager } from "@/components/admin/settings/team-manager";
 import { requireAdmin } from "@/lib/auth";
 import { readSteadfastSettings } from "@/lib/courier";
 import { readFraudSettings } from "@/lib/fraud";
+import { defaultHeaderMenu, PAYMENT_BADGES, readLayout, SYSTEM_LINKS } from "@/lib/layout";
 import { readMetaSettings } from "@/lib/meta";
 import { prisma } from "@/lib/prisma";
 import { readAllInfoPages, readStoreSettings } from "@/lib/settings";
@@ -25,6 +28,8 @@ export const metadata: Metadata = { title: "Settings" };
 const TABS = [
   { id: "store", label: "Store", ownerOnly: true },
   { id: "banners", label: "Banners", ownerOnly: true },
+  { id: "menus", label: "Menus", ownerOnly: true },
+  { id: "layout", label: "Header & Footer", ownerOnly: true },
   { id: "pages", label: "Pages", ownerOnly: true },
   { id: "marketing", label: "Marketing", ownerOnly: true },
   { id: "courier", label: "Courier", ownerOnly: true },
@@ -40,7 +45,7 @@ export default function SettingsPage({ searchParams }: PageProps<"/admin/setting
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-sm text-adm-muted">স্টোরের তথ্য, ব্যানার, পেজ, মার্কেটিং, কুরিয়ার, টিম আর আপনার অ্যাকাউন্ট</p>
+        <p className="text-sm text-adm-muted">স্টোরের তথ্য, ব্যানার, মেনু, পেজ, মার্কেটিং, কুরিয়ার, টিম আর আপনার অ্যাকাউন্ট</p>
       </div>
       <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-stone-900/5" />}>
         {searchParams.then((sp) => (
@@ -100,6 +105,49 @@ async function TabBody({ tab, meId }: { tab: Tab; meId: number }) {
     case "banners": {
       const banners = await prisma.banner.findMany({ orderBy: [{ sortOrder: "asc" }, { id: "asc" }] });
       return <BannersManager banners={banners.map((b) => ({ id: b.id, position: b.position, image: b.image, title: b.title, link: b.link, isActive: b.isActive }))} />;
+    }
+    case "menus": {
+      const [layout, categories, pages] = await Promise.all([
+        readLayout(),
+        prisma.category.findMany({ where: { isActive: true }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }], include: { _count: { select: { products: { where: { isActive: true } } } } } }),
+        readAllInfoPages(),
+      ]);
+      const byId = new Map(categories.map((c) => [c.id, c]));
+      const forDefault = categories.map((c) => ({ id: c.id, name: c.name, nameBn: c.nameBn, slug: c.slug, icon: c.icon, image: c.image, parentId: c.parentId, productCount: c._count.products }));
+      return (
+        <MenusForm
+          initial={{ headerMenu: layout.headerMenu ?? defaultHeaderMenu(forDefault), footerColumns: layout.footerColumns }}
+          options={{
+            categories: categories.map((c) => ({
+              id: c.id,
+              name: c.name,
+              parentName: c.parentId ? (byId.get(c.parentId)?.name ?? null) : null,
+              hasChildren: categories.some((x) => x.parentId === c.id),
+            })),
+            pages: pages.map((p) => ({ slug: p.slug, title: p.title })),
+            system: Object.entries(SYSTEM_LINKS).map(([key, l]) => ({ key, label: l.label })),
+          }}
+        />
+      );
+    }
+    case "layout": {
+      const l = await readLayout();
+      return (
+        <HeaderFooterForm
+          initial={{
+            announcement: l.announcement,
+            logo: l.logo,
+            favicon: l.favicon,
+            footerAbout: l.footerAbout,
+            copyright: l.copyright,
+            license: l.license,
+            social: l.social,
+            badges: l.badges,
+            mobileNav: l.mobileNav,
+          }}
+          badgeOptions={Object.entries(PAYMENT_BADGES).map(([key, label]) => ({ key, label }))}
+        />
+      );
     }
     case "pages":
       return <PagesEditor pages={await readAllInfoPages()} />;

@@ -21,6 +21,7 @@ export type CategoryItem = {
   slug: string;
   icon: string | null;
   image: string | null;
+  parentId: number | null;
   productCount: number;
 };
 
@@ -78,6 +79,7 @@ export async function getCategories(): Promise<CategoryItem[]> {
     slug: c.slug,
     icon: c.icon,
     image: c.image,
+    parentId: c.parentId,
     productCount: c._count.products,
   }));
 }

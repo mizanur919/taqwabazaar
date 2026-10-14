@@ -15,7 +15,7 @@ export const uploadBaseUrl = () => (process.env.UPLOAD_BASE_URL || "/uploads").r
 
 export class UploadError extends Error {}
 
-type Kind = "products" | "categories" | "brands" | "banners";
+type Kind = "products" | "categories" | "brands" | "banners" | "branding";
 
 /** Saves one image and returns its public URL. Throws UploadError with a Bangla message. */
 export async function saveImage(file: File, kind: Kind, maxSize = 1200): Promise<string> {
