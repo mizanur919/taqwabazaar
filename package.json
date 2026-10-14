@@ -6,12 +6,20 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "node prisma/seed.mts",
+    "db:demo-orders": "node --env-file=.env prisma/demo-orders.mts",
+    "admin:create": "node --env-file=.env prisma/create-admin.mts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "lucide-react": "^1.56.0",
     "next": "16.4.0",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
@@ -20,7 +28,13 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
+    "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "allowScripts": {
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "prisma@6.19.3": true
   }
 }

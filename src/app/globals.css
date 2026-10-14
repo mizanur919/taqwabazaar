@@ -1,26 +1,151 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-brand: #f25221;
+  --color-brand-dark: #d9431a;
+  --color-brand-soft: #fff1ec;
+  --color-ink: #0f1729;
+  --color-ink-soft: #1e293b;
+  --color-muted: #64748b;
+  --color-line: #e5e7eb;
+  --color-page: #fcfcfc;
+  --color-whatsapp: #22c55e;
+  --font-sans: var(--font-hind), ui-sans-serif, system-ui, sans-serif;
+  /* Hind Siliguri is loaded without a 500 weight (smaller download), so font-medium uses 600 */
+  --font-weight-medium: 600;
+}
+
+/* Admin panel tokens. Accent can later be swapped per user (Settings → Appearance). */
+.admin-theme {
+  --adm-bg: #f4f1ea;
+  --adm-surface: #fffefb;
+  --adm-line: #ebe5d8;
+  --adm-ink: #1c1917;
+  --adm-ink-soft: #44403c;
+  --adm-muted: #78716c;
+  --adm-accent: #f0b43c;
+  --adm-accent-strong: #b9780c;
+  --adm-accent-soft: #fbf0d6;
+  --adm-stage-1: #f2c76b;
+  --adm-stage-2: #b9780c;
+  --adm-stage-3: #6b6157;
+  --adm-stage-4: #1c1917;
+  --adm-glow: #f6dfa8;
+  --adm-glow-2: #efe3c4;
+  --adm-veil: rgb(255 255 255 / 0.55);
+  color: var(--adm-ink);
+}
+.adm-veil {
+  background: var(--adm-veil);
+}
+
+/* Accent palettes (Settings → Appearance). Pipeline ramps validated for colour-blind separation. */
+html[data-adm-accent="teal"] .admin-theme {
+  --adm-accent: #4fb8a5;
+  --adm-accent-strong: #0f766e;
+  --adm-accent-soft: #dcf3ee;
+  --adm-stage-1: #b5e6dc;
+  --adm-stage-2: #4fb8a5;
+  --adm-stage-3: #0f766e;
+  --adm-glow: #c4ece3;
+  --adm-glow-2: #dcefe9;
+}
+html[data-adm-accent="rose"] .admin-theme {
+  --adm-accent: #ec8aa6;
+  --adm-accent-strong: #be185d;
+  --adm-accent-soft: #fde4ec;
+  --adm-stage-1: #f7c2d1;
+  --adm-stage-2: #e2709a;
+  --adm-stage-3: #9d174d;
+  --adm-glow: #f8d3de;
+  --adm-glow-2: #f3e1e6;
+}
+html[data-adm-accent="blue"] .admin-theme {
+  --adm-accent: #7aa7f0;
+  --adm-accent-strong: #1d4ed8;
+  --adm-accent-soft: #e0eafd;
+  --adm-stage-1: #9ebdf3;
+  --adm-stage-2: #1d4ed8;
+  --adm-glow: #d3e2fb;
+  --adm-glow-2: #e3e9f3;
+}
+
+/* Dark mode: re-map the tokens, then the few hard-coded light utilities used across the admin UI. */
+html[data-adm-mode="dark"] .admin-theme {
+  color-scheme: dark;
+  --adm-bg: #141210;
+  --adm-surface: #1f1c19;
+  --adm-line: #38332e;
+  --adm-ink: #f3efe8;
+  --adm-ink-soft: #d4cdc2;
+  --adm-muted: #a39d94;
+  --adm-accent-soft: color-mix(in oklab, var(--adm-accent) 18%, transparent);
+  --adm-stage-3: #a8a29e;
+  --adm-stage-4: #f3efe8;
+  --adm-glow: color-mix(in oklab, var(--adm-accent) 22%, transparent);
+  --adm-glow-2: transparent;
+  --adm-veil: rgb(0 0 0 / 0.25);
+}
+html[data-adm-mode="dark"] .admin-theme :is(.bg-white, .bg-stone-50) {
+  background-color: var(--adm-surface);
+}
+html[data-adm-mode="dark"] .admin-theme :is(.bg-stone-100, .bg-stone-200) {
+  background-color: #2a2622;
+}
+html[data-adm-mode="dark"] .admin-theme :is(.hover\:bg-stone-50:hover, .hover\:bg-white:hover) {
+  background-color: #2a2622;
+}
+html[data-adm-mode="dark"] .admin-theme :is(.bg-stone-900\/5, .hover\:bg-stone-900\/5:hover) {
+  background-color: rgb(255 255 255 / 0.07);
+}
+html[data-adm-mode="dark"] .admin-theme .border-white {
+  border-color: var(--adm-line);
+}
+/* dark buttons/tooltips become light in dark mode, so their text must turn dark */
+html[data-adm-mode="dark"] .admin-theme .bg-adm-ink {
+  color: var(--adm-bg);
+}
+html[data-adm-mode="dark"] .admin-theme .hover\:bg-stone-800:hover {
+  background-color: #d4cdc2;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-adm-bg: var(--adm-bg);
+  --color-adm-surface: var(--adm-surface);
+  --color-adm-line: var(--adm-line);
+  --color-adm-ink: var(--adm-ink);
+  --color-adm-ink-soft: var(--adm-ink-soft);
+  --color-adm-muted: var(--adm-muted);
+  --color-adm-accent: var(--adm-accent);
+  --color-adm-accent-strong: var(--adm-accent-strong);
+  --color-adm-accent-soft: var(--adm-accent-soft);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+
+/* hide scrollbars on horizontal sliders */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* product description coming from the database */
+.prose-desc p {
+  margin-bottom: 0.75rem;
+  line-height: 1.8;
+}
+
+/* Admin → Reports → Download PDF uses the browser's print dialog */
+@media print {
+  .print-hide {
+    display: none !important;
+  }
+  .admin-theme {
+    background: #fff !important;
+  }
 }

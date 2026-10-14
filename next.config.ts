@@ -1,9 +1,22 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  images: {
+    // optimized images are kept for 30 days; uploaded files get new names when they change
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    remotePatterns: [
+      new URL("https://img.taqwabazaar.com/**"), // uploaded images (Hostinger subdomain)
+      new URL("https://cdn.dummyjson.com/product-images/**"), // demo product photos
+    ],
+  },
+  experimental: {
+    serverActions: {
+      // admin uploads one image per request; images are capped at 5MB in src/lib/uploads.ts
+      bodySizeLimit: "6mb",
+    },
+  },
   turbopack: {
     rules: {
       "*.css": {
