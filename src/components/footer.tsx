@@ -19,10 +19,11 @@ export function Footer({
   return (
     <footer className="mt-16 bg-ink text-white">
       <div
-        className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:grid-cols-(--footer-cols)"
+        className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-10 px-4 py-12 md:grid-cols-(--footer-cols) md:gap-10"
         style={{ "--footer-cols": `2fr repeat(${Math.max(columns.length, 1)}, minmax(0, 1fr))` } as React.CSSProperties}
       >
-        <div>
+        {/* phones: shop info full width, menu columns two per row */}
+        <div className="col-span-2 md:col-span-1">
           <p className="text-lg font-bold">{site.name}</p>
           <p className="mt-2 whitespace-pre-line text-sm text-slate-300">
             {layout.footerAbout || `${site.name} - ${site.tagline}। পাচ্ছেন সকল প্রিমিয়াম প্রোডাক্ট মিনিমাম প্রাইজে।`}

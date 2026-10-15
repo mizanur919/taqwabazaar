@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import type { LayoutSettings, NavLink } from "@/lib/layout";
 import { site } from "@/lib/site";
 import { HeaderIcons } from "./header-icons";
+import { HeaderMenuButton } from "./menu-drawer";
 import { MenuBadgePill } from "./menu-badge";
 import { SearchBox } from "./search-box";
 
@@ -58,6 +59,7 @@ export function Header({ phone, nav, layout }: { phone: string; nav: NavLink[]; 
 
       <div className="border-b border-line">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
+          <HeaderMenuButton nav={nav} />
           <Logo src={layout.logo} />
           <div className="mx-auto hidden w-full max-w-xl md:block">
             <SearchBox />
@@ -69,7 +71,8 @@ export function Header({ phone, nav, layout }: { phone: string; nav: NavLink[]; 
         </div>
       </div>
 
-      <nav className="border-b border-line">
+      {/* phones use the ☰ button instead of this row */}
+      <nav className="hidden border-b border-line md:block">
         {/* scrolls sideways on phones; on desktop it wraps so dropdowns are not clipped */}
         <ul className="no-scrollbar mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto px-4 py-2.5 text-sm font-semibold whitespace-nowrap md:flex-wrap md:justify-center md:overflow-visible">
           {nav.map((l) => (

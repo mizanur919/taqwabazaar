@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Banknote, ShieldCheck, ShoppingBag, Truck, User } from "lucide-react";
+import { Banknote, Loader2, ShieldCheck, ShoppingBag, Truck, User } from "lucide-react";
 import { placeOrder } from "@/app/actions";
 import { CartLine } from "@/components/cart-line";
 import { CashOnDelivery, CustomerFields, Step, ZonePicker, type CustomerInfo } from "@/components/checkout-parts";
@@ -20,6 +20,9 @@ export default function CheckoutPage() {
   const [zone, setZone] = useState<DeliveryZoneId>("outside");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
+  // set once the order is saved: the cart is already empty, but we are still on this page
+  // until the thank-you page loads, so show progress instead of "your cart is empty"
+  const [placedOrderNo, setPlacedOrderNo] = useState<string | null>(null);
 
   const fee = zones.find((z) => z.id === zone)!.fee;
   const total = subtotal + fee;
@@ -42,6 +45,7 @@ export default function CheckoutPage() {
       });
       if (result.ok) {
         track("Purchase", result.purchase, { eventId: `purchase_${result.orderNo}`, server: false });
+        setPlacedOrderNo(result.orderNo);
         clearCart();
         router.replace(`/order-success/${result.orderNo}`);
       } else {
@@ -52,6 +56,16 @@ export default function CheckoutPage() {
   };
 
   if (!ready) return <div className="mx-auto min-h-[50vh] max-w-7xl px-4 py-8" />;
+
+  if (placedOrderNo) {
+    return (
+      <div className="mx-auto flex min-h-[50vh] max-w-7xl flex-col items-center justify-center gap-3 px-4 py-20 text-center" role="status">
+        <Loader2 className="size-10 animate-spin text-brand" />
+        <p className="text-lg font-semibold">অর্ডার সম্পন্ন হচ্ছে...</p>
+        <p className="text-sm text-muted">অর্ডার নাম্বার: {placedOrderNo}</p>
+      </div>
+    );
+  }
 
   if (cart.length === 0) {
     return (

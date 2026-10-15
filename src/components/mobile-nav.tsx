@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { ChevronDown, House, LayoutGrid, MessageCircle, ShoppingCart, X } from "lucide-react";
+import { useCallback, useState } from "react";
+import { House, LayoutGrid, MessageCircle, ShoppingCart } from "lucide-react";
 import type { NavLink } from "@/lib/layout";
-import { MenuBadgePill } from "./menu-badge";
+import { MenuDrawer } from "./menu-drawer";
 import { useStore } from "./store-provider";
 
 /** Phone-only bar fixed to the bottom: Home, Menu (full menu drawer), Cart, WhatsApp. */
@@ -13,26 +13,10 @@ export function MobileNav({ nav }: { nav: NavLink[] }) {
   const { cartCount, contact } = useStore();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const close = useCallback(() => setOpen(false), []);
 
-  // close the drawer after navigating
-  const [openedAt, setOpenedAt] = useState(pathname);
-  if (openedAt !== pathname) {
-    setOpenedAt(pathname);
-    setOpen(false);
-  }
-
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
+  // cart and checkout have their own sticky action bar (checkout / confirm order) in the same spot
+  if (pathname === "/cart" || pathname === "/checkout") return null;
 
   const item = "flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-semibold";
   return (
@@ -60,53 +44,7 @@ export function MobileNav({ nav }: { nav: NavLink[] }) {
         </a>
       </nav>
 
-      {open && (
-        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="মেনু">
-          <button type="button" aria-label="বন্ধ করুন" className="absolute inset-0 bg-ink/50" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0 flex w-[85%] max-w-sm flex-col bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-line px-4 py-3">
-              <p className="font-bold">মেনু</p>
-              <button type="button" aria-label="বন্ধ করুন" onClick={() => setOpen(false)} className="rounded-md p-1 hover:bg-slate-100">
-                <X className="size-5" />
-              </button>
-            </div>
-            <ul className="flex-1 overflow-y-auto py-2">
-              {nav.map((l) => (
-                <li key={l.key} className="border-b border-line/60">
-                  <div className="flex items-center">
-                    <Link href={l.href} className="flex flex-1 items-center gap-2 px-4 py-3 font-semibold">
-                      {l.label}
-                      <MenuBadgePill badge={l.badge} />
-                    </Link>
-                    {l.children.length > 0 && (
-                      <button
-                        type="button"
-                        aria-label={`${l.label} এর সাব-ক্যাটাগরি`}
-                        aria-expanded={expanded === l.key}
-                        onClick={() => setExpanded((k) => (k === l.key ? null : l.key))}
-                        className="px-4 py-3 text-muted"
-                      >
-                        <ChevronDown className={`size-4 transition ${expanded === l.key ? "rotate-180" : ""}`} />
-                      </button>
-                    )}
-                  </div>
-                  {expanded === l.key && (
-                    <ul className="bg-slate-50 pb-2">
-                      {l.children.map((c) => (
-                        <li key={c.href}>
-                          <Link href={c.href} className="block px-8 py-2 text-sm">
-                            {c.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
+      <MenuDrawer nav={nav} open={open} onClose={close} />
     </>
   );
 }

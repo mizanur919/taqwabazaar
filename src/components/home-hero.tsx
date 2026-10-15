@@ -180,10 +180,11 @@ export function FeatureStrip() {
     },
   ];
   return (
-    <section className="mx-auto grid max-w-7xl grid-cols-1 gap-3 px-4 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-4 lg:grid-cols-4">
       {items.map(({ icon: Icon, title, text, color }) => (
-        <div key={title} className="flex items-center gap-3 rounded-xl border border-line bg-white p-4">
-          <span className={`grid size-10 place-items-center rounded-lg ${color}`}>
+        // phones: two narrow cards per row, so the icon sits above the text
+        <div key={title} className="flex flex-col items-center gap-2 rounded-xl border border-line bg-white p-3 text-center sm:flex-row sm:gap-3 sm:p-4 sm:text-left">
+          <span className={`grid size-10 shrink-0 place-items-center rounded-lg ${color}`}>
             <Icon className="size-5" />
           </span>
           <div>
