@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { BadgeCheck, Image as ImageIcon, Megaphone, Share2, Smartphone, Type } from "lucide-react";
+import { BadgeCheck, Globe, Image as ImageIcon, Megaphone, Share2, Smartphone, Type } from "lucide-react";
 import { saveHeaderFooter, uploadBrandImage } from "@/app/admin/(panel)/settings/actions";
 import type { LayoutSettings } from "@/lib/layout";
 import { Button, Field, TextArea, TextInput, Toggle } from "../form";
 import { ImageUploader } from "../image-uploader";
 import { Card, CardHeader } from "../ui";
 
-type Values = Pick<LayoutSettings, "announcement" | "logo" | "favicon" | "footerAbout" | "copyright" | "license" | "social" | "badges" | "mobileNav">;
+type Values = Pick<LayoutSettings, "siteName" | "tagline" | "metaDescription" | "announcement" | "logo" | "favicon" | "footerAbout" | "copyright" | "license" | "social" | "badges" | "mobileNav">;
 
 const colors: { id: LayoutSettings["announcement"]["color"]; label: string; className: string }[] = [
   { id: "brand", label: "কমলা", className: "bg-brand" },
@@ -33,7 +33,16 @@ const uploadLogo = (fd: FormData) => {
   return uploadBrandImage(fd);
 };
 
-export function HeaderFooterForm({ initial, badgeOptions }: { initial: Values; badgeOptions: { key: string; label: string }[] }) {
+export function HeaderFooterForm({
+  initial,
+  badgeOptions,
+  defaults,
+}: {
+  initial: Values;
+  badgeOptions: { key: string; label: string }[];
+  /** built-in name/tagline/description, shown as placeholders and used when a field is left empty */
+  defaults: { name: string; tagline: string; description: string };
+}) {
   const [v, setV] = useState(initial);
   const [saved, setSaved] = useState(JSON.stringify(initial));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -65,6 +74,31 @@ export function HeaderFooterForm({ initial, badgeOptions }: { initial: Values; b
         });
       }}
     >
+      <Card>
+        <CardHeader
+          title="সাইটের নাম ও বিবরণ"
+          subtitle="ব্রাউজার ট্যাবের শিরোনাম, Google সার্চ, লোগো না থাকলে Header-এর লেখা, Footer আর ইনভয়েসে দেখাবে। খালি রাখলে আগের লেখা থাকবে।"
+          action={<Globe className="size-5 text-adm-accent-strong" />}
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="সাইটের নাম">
+            <TextInput value={v.siteName} maxLength={60} placeholder={defaults.name} onChange={(e) => set({ siteName: e.target.value })} />
+          </Field>
+          <Field label="ট্যাগলাইন" hint="হোমপেজের ট্যাবে নামের পাশে দেখায়">
+            <TextInput value={v.tagline} maxLength={100} placeholder={defaults.tagline} onChange={(e) => set({ tagline: e.target.value })} />
+          </Field>
+          <Field label="সাইটের বিবরণ (Google-এর জন্য)" className="sm:col-span-2" hint="Google সার্চ আর Facebook-এ লিংক শেয়ার করলে নামের নিচে দেখায়, ১৫০-১৬০ অক্ষর ভালো">
+            <TextArea rows={2} value={v.metaDescription} maxLength={300} placeholder={defaults.description} onChange={(e) => set({ metaDescription: e.target.value })} />
+          </Field>
+        </div>
+        <div className="mt-4 rounded-lg border border-adm-line bg-white p-3 text-sm">
+          <p className="text-xs text-adm-muted">ব্রাউজার ট্যাবে যেমন দেখাবে:</p>
+          <p className="mt-1 truncate font-semibold">
+            {v.siteName.trim() || defaults.name} - {v.tagline.trim() || defaults.tagline}
+          </p>
+        </div>
+      </Card>
+
       <Card>
         <CardHeader title="ঘোষণা বার" subtitle="সাইটের একদম উপরে একটা লাইন, যেমন অফার বা ছুটির খবর" action={<Megaphone className="size-5 text-adm-accent-strong" />} />
         <div className="space-y-4">

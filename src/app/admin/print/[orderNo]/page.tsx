@@ -5,8 +5,9 @@ import { PrintButton } from "@/components/admin/print-button";
 import { getOrderDetail } from "@/lib/admin/orders";
 import { requireAdmin } from "@/lib/auth";
 import { taka } from "@/lib/format";
+import { getBrand } from "@/lib/layout";
 import { getStoreSettings } from "@/lib/settings";
-import { deliveryZones, site } from "@/lib/site";
+import { deliveryZones } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Print", robots: { index: false } };
 
@@ -29,7 +30,7 @@ async function PrintContent({ orderNo, slip }: { orderNo: string; slip: boolean 
   const order = await getOrderDetail(decodeURIComponent(orderNo));
   if (!order || order.deletedAt) notFound();
   const zone = deliveryZones.find((z) => z.id === order.zone)?.label ?? order.zone;
-  const contact = await getStoreSettings();
+  const [contact, brand] = await Promise.all([getStoreSettings(), getBrand()]);
 
   return (
     <div className="min-h-screen bg-stone-100 py-8 text-stone-900 print:bg-white print:py-0">
@@ -41,7 +42,7 @@ async function PrintContent({ orderNo, slip }: { orderNo: string; slip: boolean 
         <div className="mx-auto w-[100mm] border-2 border-dashed border-stone-400 bg-white p-5 text-sm print:border-solid">
           <div className="flex items-start justify-between border-b border-stone-300 pb-3">
             <div>
-              <p className="text-lg font-bold">{site.name}</p>
+              <p className="text-lg font-bold">{brand.name}</p>
               <p className="text-xs">{contact.phone}</p>
             </div>
             <div className="text-right">
@@ -83,7 +84,7 @@ async function PrintContent({ orderNo, slip }: { orderNo: string; slip: boolean 
         <div className="mx-auto max-w-[210mm] bg-white p-10 shadow print:p-0 print:shadow-none">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-2xl font-bold">{site.name}</p>
+              <p className="text-2xl font-bold">{brand.name}</p>
               <p className="text-sm text-stone-600">{contact.address}</p>
               <p className="text-sm text-stone-600">
                 {contact.phone} · {contact.email}
@@ -157,7 +158,7 @@ async function PrintContent({ orderNo, slip }: { orderNo: string; slip: boolean 
           </dl>
 
           <p className="mt-16 text-center text-xs text-stone-500">
-            {site.name} থেকে কেনাকাটার জন্য ধন্যবাদ। যেকোনো প্রয়োজনে কল করুন {contact.phone}
+            {brand.name} থেকে কেনাকাটার জন্য ধন্যবাদ। যেকোনো প্রয়োজনে কল করুন {contact.phone}
           </p>
         </div>
       )}

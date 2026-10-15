@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { PrintButton } from "@/components/admin/print-button";
 import { getStockRows } from "@/lib/admin/stock";
 import { requireAdmin } from "@/lib/auth";
-import { site } from "@/lib/site";
+import { getBrand } from "@/lib/layout";
 
 export const metadata: Metadata = { title: "Count sheet", robots: { index: false } };
 
@@ -18,7 +18,7 @@ export default function CountSheetPage() {
 
 async function CountSheet() {
   await requireAdmin();
-  const { rows } = await getStockRows();
+  const [{ rows }, brand] = await Promise.all([getStockRows(), getBrand()]);
   const active = rows.filter((r) => r.isActive);
   const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Dhaka" });
 
@@ -30,7 +30,7 @@ async function CountSheet() {
       <div className="mx-auto max-w-[210mm] bg-white p-10 shadow print:p-0 print:shadow-none">
         <div className="flex items-end justify-between border-b-2 border-stone-900 pb-3">
           <div>
-            <p className="text-xl font-bold">{site.name} · Stock count sheet</p>
+            <p className="text-xl font-bold">{brand.name} · Stock count sheet</p>
             <p className="text-sm text-stone-600">{active.length}টি আইটেম</p>
           </div>
           <p className="text-sm">তারিখ: {today}</p>

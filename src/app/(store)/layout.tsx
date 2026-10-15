@@ -5,14 +5,20 @@ import { Header } from "@/components/header";
 import { MetaPixel } from "@/components/meta-pixel";
 import { MobileNav } from "@/components/mobile-nav";
 import { StoreProvider } from "@/components/store-provider";
-import { getLayout, getStoreLayout } from "@/lib/layout";
+import { brandOf, getLayout, getStoreLayout } from "@/lib/layout";
 import { getPixelConfig } from "@/lib/meta";
 import { getStoreSettings, zonesFor } from "@/lib/settings";
 
-/** Favicon uploaded in Admin → Settings → Header & Footer (the default icon otherwise). */
+/** Site name, description and favicon from Admin → Settings → Header & Footer. */
 export async function generateMetadata(): Promise<Metadata> {
-  const { favicon } = await getLayout();
-  return favicon ? { icons: { icon: favicon } } : {};
+  const layout = await getLayout();
+  const brand = brandOf(layout);
+  return {
+    // absolute: the root layout's built-in "%s | TaqwaBazaar" template must not wrap the store's own name
+    title: { absolute: `${brand.name} - ${brand.tagline}`, template: `%s | ${brand.name}` },
+    description: brand.description,
+    ...(layout.favicon ? { icons: { icon: layout.favicon } } : {}),
+  };
 }
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {

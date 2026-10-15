@@ -4,7 +4,7 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { getCategories, type CategoryItem } from "./catalog";
 import { prisma } from "./prisma";
-import { staticPages } from "./site";
+import { site, staticPages } from "./site";
 
 const KEY = "layout";
 
@@ -31,6 +31,11 @@ export type FooterColumn = { id: string; title: string; items: MenuItem[] };
 export type AnnouncementColor = "brand" | "dark" | "green" | "red";
 
 export type LayoutSettings = {
+  /** browser tab title, logo text, footer and invoices; empty = the defaults in src/lib/site.ts */
+  siteName: string;
+  tagline: string;
+  /** search engines and link previews */
+  metaDescription: string;
   headerMenu: MenuItem[] | null; // null = default (Home, All Products, first categories, Track order)
   footerColumns: FooterColumn[];
   announcement: { enabled: boolean; text: string; link: string; color: AnnouncementColor };
@@ -77,6 +82,9 @@ const item = (kind: MenuKind, ref: string, extra: Partial<MenuItem> = {}): MenuI
 });
 
 export const defaultLayout = (): LayoutSettings => ({
+  siteName: "",
+  tagline: "",
+  metaDescription: "",
   headerMenu: null,
   footerColumns: [
     {
@@ -230,4 +238,18 @@ export async function getStoreLayout() {
       .map((col) => ({ id: col.id, title: col.title, links: resolveMenu(col.items, categories) }))
       .filter((col) => col.links.length > 0 || col.title),
   };
+}
+
+/** Site name, tagline and description, falling back to the built-in defaults. */
+export function brandOf(l: Pick<LayoutSettings, "siteName" | "tagline" | "metaDescription">) {
+  return {
+    name: l.siteName || site.name,
+    tagline: l.tagline || site.tagline,
+    description: l.metaDescription || site.description,
+  };
+}
+
+/** Cached brand for pages outside the store layout (invoices, print pages). */
+export async function getBrand() {
+  return brandOf(await getLayout());
 }

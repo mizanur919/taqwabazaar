@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { PAYMENT_BADGES, type LayoutSettings, type NavLink } from "@/lib/layout";
+import { brandOf, PAYMENT_BADGES, type LayoutSettings, type NavLink } from "@/lib/layout";
 import type { StoreSettings } from "@/lib/settings";
-import { site } from "@/lib/site";
 import { MenuBadgePill } from "./menu-badge";
 import { SocialIcon, type SocialNetwork } from "./social-icons";
 
@@ -16,6 +15,7 @@ export function Footer({
 }) {
   const social = (Object.keys(layout.social) as SocialNetwork[]).filter((n) => layout.social[n]);
   const badges = layout.badges.filter((b) => b in PAYMENT_BADGES);
+  const brand = brandOf(layout);
   return (
     <footer className="mt-16 bg-ink text-white">
       <div
@@ -24,9 +24,9 @@ export function Footer({
       >
         {/* phones: shop info full width, menu columns two per row */}
         <div className="col-span-2 md:col-span-1">
-          <p className="text-lg font-bold">{site.name}</p>
+          <p className="text-lg font-bold">{brand.name}</p>
           <p className="mt-2 whitespace-pre-line text-sm text-slate-300">
-            {layout.footerAbout || `${site.name} - ${site.tagline}। পাচ্ছেন সকল প্রিমিয়াম প্রোডাক্ট মিনিমাম প্রাইজে।`}
+            {layout.footerAbout || `${brand.name} - ${brand.tagline}। পাচ্ছেন সকল প্রিমিয়াম প্রোডাক্ট মিনিমাম প্রাইজে।`}
           </p>
           <div className="mt-4 space-y-1 text-sm text-slate-300">
             <a href={`tel:${settings.phone}`} className="block hover:text-white">{settings.phone}</a>
@@ -79,7 +79,7 @@ export function Footer({
         </div>
       )}
       <div className="border-t border-white/10 py-5 text-center text-xs text-slate-400">
-        <p>{layout.copyright || `© ${site.name}, সর্বস্বত্ব সংরক্ষিত।`}</p>
+        <p>{layout.copyright || `© ${brand.name}, সর্বস্বত্ব সংরক্ষিত।`}</p>
         {layout.license && <p className="mt-1">{layout.license}</p>}
       </div>
     </footer>

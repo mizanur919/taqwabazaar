@@ -19,6 +19,7 @@ import { requireAdmin } from "@/lib/auth";
 import { readSteadfastSettings } from "@/lib/courier";
 import { readFraudSettings } from "@/lib/fraud";
 import { defaultHeaderMenu, PAYMENT_BADGES, readLayout, SYSTEM_LINKS } from "@/lib/layout";
+import { site } from "@/lib/site";
 import { readMetaSettings } from "@/lib/meta";
 import { prisma } from "@/lib/prisma";
 import { readAllInfoPages, readStoreSettings } from "@/lib/settings";
@@ -135,6 +136,9 @@ async function TabBody({ tab, meId }: { tab: Tab; meId: number }) {
       return (
         <HeaderFooterForm
           initial={{
+            siteName: l.siteName,
+            tagline: l.tagline,
+            metaDescription: l.metaDescription,
             announcement: l.announcement,
             logo: l.logo,
             favicon: l.favicon,
@@ -146,6 +150,7 @@ async function TabBody({ tab, meId }: { tab: Tab; meId: number }) {
             mobileNav: l.mobileNav,
           }}
           badgeOptions={Object.entries(PAYMENT_BADGES).map(([key, label]) => ({ key, label }))}
+          defaults={{ name: site.name, tagline: site.tagline, description: site.description }}
         />
       );
     }

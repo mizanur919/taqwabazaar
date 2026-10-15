@@ -461,6 +461,9 @@ export async function uploadBrandImage(formData: FormData): Promise<{ url?: stri
 }
 
 export async function saveHeaderFooter(input: {
+  siteName: string;
+  tagline: string;
+  metaDescription: string;
   announcement: LayoutSettings["announcement"];
   logo: string;
   favicon: string;
@@ -502,6 +505,9 @@ export async function saveHeaderFooter(input: {
   if (Object.keys(fieldErrors).length) return { ok: false, error: "কিছু তথ্য ঠিক করতে হবে", fieldErrors };
 
   await saveLayout({
+    siteName: text(input?.siteName, 60),
+    tagline: text(input?.tagline, 100),
+    metaDescription: text(input?.metaDescription, 300),
     announcement: { enabled: !!a.enabled, text: annText, link: annLink, color: ["brand", "dark", "green", "red"].includes(a.color) ? a.color : "brand" },
     logo: logo!,
     favicon: favicon!,

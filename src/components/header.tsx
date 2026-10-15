@@ -1,22 +1,24 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import type { LayoutSettings, NavLink } from "@/lib/layout";
+import { brandOf, type LayoutSettings, type NavLink } from "@/lib/layout";
 import { site } from "@/lib/site";
 import { HeaderIcons } from "./header-icons";
 import { HeaderMenuButton } from "./menu-drawer";
 import { MenuBadgePill } from "./menu-badge";
 import { SearchBox } from "./search-box";
 
-export function Logo({ src }: { src?: string }) {
+export function Logo({ src, name = site.name }: { src?: string; name?: string }) {
   return (
     <Link href="/" className="shrink-0 text-xl font-bold tracking-tight text-ink">
       {src ? (
-        <Image src={src} alt={site.name} width={160} height={40} priority className="h-9 w-auto max-w-40 object-contain" />
-      ) : (
+        <Image src={src} alt={name} width={160} height={40} priority className="h-9 w-auto max-w-40 object-contain" />
+      ) : name === site.name ? (
         <>
           Taqwa<span className="text-brand">Bazaar</span>
         </>
+      ) : (
+        <span className="text-brand">{name}</span>
       )}
     </Link>
   );
@@ -60,7 +62,7 @@ export function Header({ phone, nav, layout }: { phone: string; nav: NavLink[]; 
       <div className="border-b border-line">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
           <HeaderMenuButton nav={nav} />
-          <Logo src={layout.logo} />
+          <Logo src={layout.logo} name={brandOf(layout).name} />
           <div className="mx-auto hidden w-full max-w-xl md:block">
             <SearchBox />
           </div>
