@@ -59,6 +59,9 @@ model Product {
   isFeatured     Boolean  @default(false)
   metaTitle      String?  @db.VarChar(200)
   metaDesc       String?  @db.VarChar(300)
+  // Trash: hidden while set; deleted for good after 30 days
+  deletedAt      DateTime?
+  deletedBy      String?  @db.VarChar(120)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -73,6 +76,7 @@ model Product {
   @@index([brandId])
   @@index([isActive, isFeatured])
   @@index([isActive, effectivePrice])
+  @@index([deletedAt])
 }
 
 model ProductImage {
