@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     // optimized images are kept for 30 days; uploaded files get new names when they change
     minimumCacheTTL: 60 * 60 * 24 * 30,
     remotePatterns: [
-      new URL("https://img.taqwabazaar.com/**"), // uploaded images (Hostinger subdomain)
+      new URL("https://images.taqwabazaar.com/**"), // uploaded images (Hostinger subdomain, hosting/images/_upload)
       new URL("https://cdn.dummyjson.com/product-images/**"), // demo product photos
     ],
   },

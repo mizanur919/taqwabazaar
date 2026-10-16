@@ -15,11 +15,13 @@ import { MarketingForm } from "@/components/admin/settings/marketing-form";
 import { PagesEditor } from "@/components/admin/settings/pages-editor";
 import { StoreInfoForm } from "@/components/admin/settings/store-info-form";
 import { TeamManager } from "@/components/admin/settings/team-manager";
+import { UploadStatusCard } from "@/components/admin/settings/upload-status";
 import { requireAdmin } from "@/lib/auth";
 import { readSteadfastSettings } from "@/lib/courier";
 import { readFraudSettings } from "@/lib/fraud";
 import { defaultHeaderMenu, PAYMENT_BADGES, readLayout, SYSTEM_LINKS } from "@/lib/layout";
 import { site } from "@/lib/site";
+import { uploadStatus } from "@/lib/uploads";
 import { readMetaSettings } from "@/lib/meta";
 import { prisma } from "@/lib/prisma";
 import { readAllInfoPages, readStoreSettings } from "@/lib/settings";
@@ -100,6 +102,7 @@ async function TabBody({ tab, meId }: { tab: Tab; meId: number }) {
             }}
           />
           <CheckoutSettings initial={{ buyNowMode: s.buyNowMode }} />
+          <UploadStatusCard status={await uploadStatus()} />
         </div>
       );
     }

@@ -1,5 +1,5 @@
-// Serves uploaded images in local development (UPLOAD_BASE_URL="/uploads").
-// In production the img.taqwabazaar.com web server serves the folder directly.
+// Serves uploaded images in local development (UPLOAD_BASE_URL="/uploads", no UPLOAD_ENDPOINT).
+// On the live site images.taqwabazaar.com serves them directly (see src/lib/uploads.ts).
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { uploadDir } from "@/lib/uploads";

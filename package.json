@@ -11,7 +11,8 @@
     "db:seed": "node prisma/seed.mts",
     "db:demo-orders": "node --env-file=.env prisma/demo-orders.mts",
     "admin:create": "node --env-file=.env prisma/create-admin.mts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "uploads:rebase": "node --env-file=.env prisma/rebase-uploads.mts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

@@ -43,3 +43,6 @@ next-env.d.ts
 
 # uploaded images (local dev)
 /storage/
+
+# secret key for the images subdomain upload script
+hosting/images/_upload/upload-key.php
